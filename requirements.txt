@@ -1,0 +1,13 @@
+# Core stack for the AA 2026/27 pet adoption project
+numpy>=1.26
+pandas>=2.1
+scipy>=1.11
+scikit-learn>=1.4
+matplotlib>=3.8
+seaborn>=0.13
+jupyter>=1.0
+nbconvert>=7.0
+# Optional, only if the team approves resampling (see docs/COURSE_SCOPE.md)
+# imbalanced-learn>=0.12
+# Optional, only if the team decides to use Orange3
+# orange3>=3.36
