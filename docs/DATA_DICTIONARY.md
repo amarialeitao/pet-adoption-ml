@@ -2,40 +2,42 @@
 
 Source: `PetFinder_dataset.csv` (course version) and the lookup tables `breed_labels.csv`, `color_labels.csv`, `state_labels.csv`, all supplied by the professor. Code meanings follow the original Kaggle data description; the professor's notebook takes precedence where they differ.
 
-> The counts below come from a **first audit** run while setting up the repository (24 Nov 2026), using a custom parser (see §4). They are descriptive facts about the file, not modelling results. They should be re-checked in the notebook (issue: *Audit data quality*).
+> The counts below come from `notebooks/01_EDA.ipynb` (27 Nov 2026), using the loader in `src/preprocessing/loader.py` (see §4). They are descriptive facts about the file, not modelling results.
+>
+> **Correction (27 Nov 2026).** The first version of this page (24 Nov) used a simpler parser and reported missing values in `Type`, `Age`, `Breed1`, `AdoptionSpeed` and out-of-domain codes (e.g. `Gender = 265`, `VideoAmt = 41401`). Those were **parsing artefacts** from shifted columns. With the current loader, only `Name` has missing values and every code is within its domain.
 
 ## 1. Main table — 14,993 rows × 24 columns
 
 | Column | Type | Description | Codes / range observed |
 |---|---|---|---|
-| `Type` | categorical | Type of animal | 1 = Dog (8,128), 2 = Cat (6,855); **10 missing** |
-| `Name` | text | Name of the pet | 1,257 empty; values such as "No Name Yet" also occur |
-| `Age` | numeric | Age when listed, **in months** | 0–255; median 3; **9 missing** |
-| `Breed1` | categorical | Primary breed → `breed_labels.csv` | 307 = "Mixed Breed" is the most common; **4 missing** |
-| `Breed2` | categorical | Secondary breed (0 = none) → `breed_labels.csv` | **1 missing** |
-| `Gender` | categorical | 1 = Male, 2 = Female, 3 = Mixed (group listing) | 1: 5,536 · 2: 7,275 · 3: 2,173 · **invalid: 0 (4), 265, 266, 307 (4 total)**, 1 missing |
-| `Color1`–`Color3` | categorical | Colours → `color_labels.csv` (0 = none) | Out-of-range codes occur (e.g. `Color1` = 266, `Color2` = 307) |
-| `MaturitySize` | ordinal | 1 = Small, 2 = Medium, 3 = Large, 4 = Extra Large, 0 = Not specified | **invalid: 6 (1), 7 (4)** |
-| `FurLength` | ordinal | 1 = Short, 2 = Medium, 3 = Long, 0 = Not specified | **invalid: 7 (2)** |
-| `Vaccinated` | categorical | 1 = Yes, 2 = No, 3 = Not sure | 5,900 / 7,226 / 1,867 |
-| `Dewormed` | categorical | 1 = Yes, 2 = No, 3 = Not sure | **invalid: 5 (1)** |
-| `Sterilized` | categorical | 1 = Yes, 2 = No, 3 = Not sure | 3,105 / 10,074 / 1,814 |
-| `Health` | ordinal | 1 = Healthy, 2 = Minor injury, 3 = Serious injury, 0 = Not specified | 14,472 / 487 / 34 |
-| `Quantity` | numeric | Number of pets in the listing | 1–20 |
-| `Fee` | numeric | Adoption fee (0 = free) | 0–3,000; median 0 |
-| `State` | categorical | Malaysian state → `state_labels.csv` | Selangor 8,709 and Kuala Lumpur 3,843 dominate; **invalid: 0, 3, 4, 50 (9 rows)** |
-| `RescuerID` | ID | Anonymised rescuer | 5,596 distinct |
-| `VideoAmt` | numeric | Number of videos uploaded | Mostly 0; **max 41,401 (looks like a State code in the wrong column)**; 5 missing |
-| `Description` | text | Free-text profile, mainly English; some Malay and Chinese | Contains commas, quotes, line breaks and some mis-encoded characters |
-| `PetID` | ID | Unique listing ID | No duplicates found |
-| `PhotoAmt` | numeric | Number of photos uploaded | 0–30, stored as float (e.g. `2.0`) |
-| `AdoptionSpeed` | **target**, ordinal | 0 same day · 1 = 1–7 days · 2 = 8–30 days · 3 = 31–90 days · 4 = not adopted after 100 days | 0: 410 · 1: 3,085 · 2: 4,034 · 3: 3,259 · 4: 4,194 · **11 missing / non-numeric** |
+| `Type` | categorical | Type of animal | 1 = Dog (8,132), 2 = Cat (6,861) |
+| `Name` | text | Name of the pet | **1,257 empty**; 129 placeholders such as "No Name Yet"; ~840 group names ("2 Kittens") |
+| `Age` | numeric | Age when listed, **in months** | 0–255; median 3; 75% of ages ≥ 12 are whole years |
+| `Breed1` | categorical | Primary breed → `breed_labels.csv` | 176 distinct; 307 "Mixed Breed" 39.5%; 0 (none) in 5 rows; 12 rows with a breed of the other species |
+| `Breed2` | categorical | Secondary breed (0 = none) → `breed_labels.csv` | 0 in 72% of rows; equals `Breed1` in 1,510 rows; 3 rows with a breed of the other species |
+| `Gender` | categorical | 1 = Male, 2 = Female, 3 = Mixed (group listing) | 5,536 / 7,277 / 2,180 |
+| `Color1`–`Color3` | categorical | Colours → `color_labels.csv` (0 = none) | All codes valid; `Color2`/`Color3` never repeat a previous colour |
+| `MaturitySize` | ordinal | 1 = Small, 2 = Medium, 3 = Large, 4 = Extra Large, 0 = Not specified | 3,395 / 10,305 / 1,260 / 33; 0 never used |
+| `FurLength` | ordinal | 1 = Short, 2 = Medium, 3 = Long, 0 = Not specified | 8,808 / 5,361 / 824; 0 never used |
+| `Vaccinated` | categorical | 1 = Yes, 2 = No, 3 = Not sure | 5,898 / 7,227 / 1,868 |
+| `Dewormed` | categorical | 1 = Yes, 2 = No, 3 = Not sure | 8,397 / 4,815 / 1,781 |
+| `Sterilized` | categorical | 1 = Yes, 2 = No, 3 = Not sure | 3,101 / 10,077 / 1,815 |
+| `Health` | ordinal | 1 = Healthy, 2 = Minor injury, 3 = Serious injury, 0 = Not specified | 14,478 / 481 / 34; 0 never used |
+| `Quantity` | numeric | Number of pets in the listing | 1–20; 1 in 77% of rows |
+| `Fee` | numeric | Adoption fee (0 = free) | 0–3,000; 0 in 84% of rows |
+| `State` | categorical | Malaysian state → `state_labels.csv` | 14 of 15 states used; Selangor 8,714 and Kuala Lumpur 3,845 |
+| `RescuerID` | ID | Anonymised rescuer | 5,595 distinct; 3,783 with one listing; largest 459 |
+| `VideoAmt` | numeric | Number of videos uploaded | 0–8; 0 in 96% of rows |
+| `Description` | text | Free-text profile, mainly English; some Malay and Chinese | Never empty; contains commas, quotes, line breaks |
+| `PetID` | ID | Unique listing ID (9 characters) | No duplicates; but 8 pairs of rows identical in every other column |
+| `PhotoAmt` | numeric | Number of photos uploaded | 0–30, stored as float (e.g. `2.0`); 0 in 341 rows |
+| `AdoptionSpeed` | **target**, ordinal | 0 same day · 1 = 1–7 days · 2 = 8–30 days · 3 = 31–90 days · 4 = no adoption after 100 days | 0: 410 · 1: 3,090 · 2: 4,037 · 3: 3,259 · 4: 4,197 · no missing values |
 
 ### Derived target (required by the assignment)
 
 | Column | Definition |
 |---|---|
-| `ADOPTION` | 1 if `AdoptionSpeed` ∈ {0, 1, 2, 3} (adopted), 0 if `AdoptionSpeed` = 4 (not adopted). Expected balance ≈ 72% / 28%. See open issue §5.1. |
+| `ADOPTION` | 1 if `AdoptionSpeed` ∈ {0, 1, 2, 3} (adopted), 0 if `AdoptionSpeed` = 4 (not adopted), as defined in the updated template (26 Nov 2026). Balance: 10,796 (72.0%) / 4,197 (28.0%). |
 
 ## 2. Lookup tables
 
@@ -45,28 +47,31 @@ Source: `PetFinder_dataset.csv` (course version) and the lookup tables `breed_la
 | `color_labels.csv` | `ColorID`, `ColorName` | 7 | Black, Brown, Golden, Yellow, Cream, Gray, White |
 | `state_labels.csv` | `StateID`, `StateName` | 15 | Malaysian states and federal territories |
 
-## 3. Data-quality issues found so far
+## 3. Data-quality issues
 
-1. **Missing values** in `Type`, `Age`, `Breed1`, `Breed2`, `Gender`, `VideoAmt` and the target `AdoptionSpeed` (11 rows).
-2. **Out-of-domain codes** in `Gender`, `MaturitySize`, `FurLength`, `Dewormed`, `State`, `Color1`, `Color2`.
-3. **Values that look shifted into the wrong column** (e.g. breed codes 265/266/307 inside `Gender`, a state code inside `VideoAmt`).
-4. **Possible typos / outliers**: `Age` up to 255 months (21 years), `Fee` up to 3,000.
-5. The professor confirms the data "can contain errors/typos" on purpose, so cleaning choices are part of the graded work.
+See `reports/EDA_DIAGNOSTIC.md` §3–4 for details and proposed handling.
+
+1. **Missing values:** only `Name` (1,257 rows). "Not sure" (code 3) in `Vaccinated`, `Dewormed`, `Sterilized` (12–13% each) is missing information in disguise.
+2. **No out-of-domain codes** in any coded column.
+3. **Inconsistencies between columns:** breed of the wrong species (15 rows), `Breed1 = 0` (5), `Breed2 = Breed1` (1,510), sterilised at ≤ 3 months (279).
+4. **Implausible or skewed values:** `Age` up to 255 months, `Fee` up to 3,000, age heaping on whole years.
+5. **Duplicates:** 8 pairs of listings identical except for `PetID`.
+6. **Encoding:** 147 names contain mis-encoded (double-decoded UTF-8) characters.
 
 ## 4. How to load the CSV (important)
 
 `pd.read_csv("PetFinder_dataset.csv")` **does not parse this file correctly**:
 
-- every line ends with `;;;;;;;;;;` (an Excel export artefact);
-- roughly 9,100 lines are wrapped in one pair of outer quotes with inner quotes doubled (`""`);
-- many `Description` values contain unquoted commas;
-- a few descriptions contain line breaks or mis-encoded text.
+- every record ends with a run of `;` (an Excel export artefact);
+- about 60% of records are wrapped in one pair of outer quotes with inner quotes doubled (`""`);
+- many `Description` values contain unquoted commas, line breaks and `";"` fragments;
+- a few descriptions contain characters such as U+0085 that Python's `str.splitlines()` treats as line breaks.
 
-A robust approach that recovered all 14,993 records in the audit: strip the trailing semicolons, remove the outer quotes and un-double inner quotes, then take the **first 20 fields**, the **last 3 fields** (`PetID`, `PhotoAmt`, `AdoptionSpeed`) and join everything in between as `Description`. This will be implemented and documented in the notebook's *0.1 Loading Data* section (issue: *Robust data loader*).
+Use `src.preprocessing.loader.load_petfinder`. It splits the file on `\n` only, ends a record on the line that finishes with `,<PetID>,<PhotoAmt>,<AdoptionSpeed>`, reads the first 20 fields from the start (handling quoted names), and keeps the rest as `Description`. It recovers all 14,993 records with every numeric field parsed.
 
 ## 5. Open questions
 
-1. **`ADOPTION` definition.** The template says `ADOPTION = 1` when `AdoptionSpeed` ∈ **[0,4]**, but 4 means "not adopted", so the interval should be **[0,3]**. We will use [0,3] and confirm with the professor.
-2. **Class 0 is missing from the template's list.** The notebook lists codes 1–4 only; the original Kaggle definition is "adopted on the same day". To confirm with the professor.
-3. **The 11 rows without a valid target**: drop, or investigate whether the value was shifted?
-4. **Rows with shifted columns**: repair or drop?
+1. ~~`ADOPTION` definition.~~ **Resolved** by the updated template (26 Nov 2026): `ADOPTION = 1` for `AdoptionSpeed` ∈ {0,1,2,3}.
+2. ~~Class 0 missing from the template.~~ **Resolved**: class 0 = adopted on the same day.
+3. How to fix breed/species inconsistencies (unknown vs. species' mixed code).
+4. Whether to drop or merge the 8 duplicate pairs.
