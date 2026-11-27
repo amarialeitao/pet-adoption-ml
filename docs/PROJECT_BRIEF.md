@@ -69,6 +69,6 @@ Sections: 2.1 preprocessing for clustering · 2.2 learning and evaluating cluste
 
 | # | Issue | Our working assumption |
 |---|---|---|
-| A1 | `ADOPTION = 1` is defined as `AdoptionSpeed` ∈ [0,4], which would make every pet "adopted" | Use [0,3]; confirm with the professor |
-| A2 | The dataset section lists codes 1–4 but not 0 | 0 = adopted on the listing day (Kaggle definition); confirm |
-| A3 | The CSV does not load with default settings | Custom loader, see [`DATA_DICTIONARY.md`](DATA_DICTIONARY.md) §4 |
+| A1 | `ADOPTION = 1` is defined as `AdoptionSpeed` ∈ [0,4], which would make every pet "adopted" | **Resolved** in the updated template (26 Nov 2026): `ADOPTION = 1` for {0,1,2,3}, 0 for {4} |
+| A2 | The dataset section lists codes 1–4 but not 0 | **Resolved** in the updated template: 0 = adopted on the same day it was listed |
+| A3 | The CSV does not load with default settings | Custom loader `src/preprocessing/loader.py`, see [`DATA_DICTIONARY.md`](DATA_DICTIONARY.md) §4 |
